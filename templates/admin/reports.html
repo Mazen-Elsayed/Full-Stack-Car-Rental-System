@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">System Reports</h2>
+
+    <!-- Date Range and Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="date" name="start_date" class="form-control" 
+                           value="{{ request.args.get('start_date', default_start_date) }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">End Date</label>
+                    <input type="date" name="end_date" class="form-control" 
+                           value="{{ request.args.get('end_date', default_end_date) }}" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Car Plate ID (Optional)</label>
+                    <input type="text" name="plate_id" class="form-control" 
+                           value="{{ request.args.get('plate_id', '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Customer SSN (Optional)</label>
+                    <input type="text" name="customer_ssn" class="form-control" 
+                           value="{{ request.args.get('customer_ssn', '') }}">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter me-2"></i>Generate Reports
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Debug Information -->
+    <div class="card mb-4 d-none">
+        <div class="card-body">
+            <h6>Debug Info:</h6>
+            <p>Reservations: {{ reservations|length }}</p>
+            <p>Car Status: {{ car_status|length }}</p>
+            <p>Payments: {{ payments|length }}</p>
+        </div>
+    </div>
+
+    <!-- All Reservations -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                {% if selected_customer_ssn %}
+                    Reservations for Customer SSN: {{ selected_customer_ssn }} ({{ reservations|length }})
+                {% elif selected_plate_id %}
+                    Reservations for Car {{ selected_plate_id }} ({{ reservations|length }})
+                {% else %}
+                    All Reservations ({{ reservations|length }})
+                {% endif %}
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if reservations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Car Details</th>
+                            <th>Pickup Date</th>
+                            <th>Return Date</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in reservations %}
+                        <tr>
+                            <td>{{ res.reservation_id }}</td>
+                            <td>
+                                {{ res.fname }} {{ res.lname }}<br>
+                                <small class="text-muted">{{ res.email }}</small>
+                            </td>
+                            <td>
+                                {{ res.model }} ({{ res.year }})<br>
+                                <small class="text-muted">ID: {{ res.plate_id }}</small>
+                            </td>
+                            <td>{{ res.pickup_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ res.return_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if res.status == 'active' else 'secondary' }}">
+                                    {{ res.status }}
+                                </span>
+                            </td>
+                            <td>${{ "%.2f"|format(res.price) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                {% if selected_customer_ssn %}
+                    No reservations found for customer {{ selected_customer_ssn }} in the selected period.
+                {% elif selected_plate_id %}
+                    No reservations found for car {{ selected_plate_id }} in the selected period.
+                {% else %}
+                    No reservations found for the selected period.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Car Status -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Car Status on {{ request.args.get('start_date') }}</h5>
+        </div>
+        <div class="card-body">
+            {% if car_status %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Plate ID</th>
+                            <th>Model</th>
+                            <th>Year</th>
+                            <th>Status</th>
+                            <th>Price/Day</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for car in car_status %}
+                        <tr>
+                            <td>{{ car.plate_id }}</td>
+                            <td>{{ car.model }}</td>
+                            <td>{{ car.year }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if car.current_status == 'active' else 'warning' }}">
+                                    {{ car.current_status }}
+                                </span>
+                            </td>
+                            <td>${{ "%.2f"|format(car.price_per_day) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No cars found in the system.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Revenue by Car -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Revenue by Car</h5>
+        </div>
+        <div class="card-body">
+            {% if revenue_by_car %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Car Model</th>
+                            <th>Plate ID</th>
+                            <th>Total Reservations</th>
+                            <th>Total Days Rented</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for car in revenue_by_car %}
+                        <tr>
+                            <td>{{ car.model }}</td>
+                            <td>{{ car.plate_id }}</td>
+                            <td>{{ car.total_reservations }}</td>
+                            <td>{{ car.total_days_rented }}</td>
+                            <td>${{ "%.2f"|format(car.total_revenue or 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No revenue data available for the selected period.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Office Statistics -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Office Statistics</h5>
+        </div>
+        <div class="card-body">
+            {% if office_statistics %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Office</th>
+                            <th>Total Cars</th>
+                            <th>Total Reservations</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for office in office_statistics %}
+                        <tr>
+                            <td>{{ office.country }}</td>
+                            <td>{{ office.total_cars }}</td>
+                            <td>{{ office.total_reservations }}</td>
+                            <td>${{ "%.2f"|format(office.total_revenue or 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No office statistics available.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Daily Payments -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Daily Payments ({{ payments|length }})</h5>
+        </div>
+        <div class="card-body">
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Number of Payments</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ payment.number_of_payments }}</td>
+                            <td>${{ "%.2f"|format(payment.total_amount) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">No payments found for the selected period.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+.card-header {
+    padding: 1rem;
+}
+.badge {
+    padding: 0.5em 1em;
+}
+.btn-light {
+    border: none;
+}
+.collapse {
+    transition: all 0.3s ease;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.querySelector('input[name="start_date"]');
+    const endDate = document.querySelector('input[name="end_date"]');
+
+    startDate.addEventListener('change', function() {
+        endDate.min = this.value;
+    });
+
+    endDate.addEventListener('change', function() {
+        startDate.max = this.value;
+    });
+});
+</script>
+{% endblock %}

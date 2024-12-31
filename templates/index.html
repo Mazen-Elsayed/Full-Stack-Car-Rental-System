@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <div class="hero-section text-center py-5 bg-primary text-white">
+        <h1 class="display-4">Welcome to CarRental</h1>
+        <p class="lead">Your premier destination for quality car rentals</p>
+        {% if not session.get('customer_ssn') and not session.get('admin') %}
+            <a href="{{ url_for('customer_login') }}" class="btn btn-light btn-lg me-2">Login</a>
+            <a href="{{ url_for('customer_register') }}" class="btn btn-outline-light btn-lg">Register</a>
+        {% endif %}
+    </div>
+
+    <!-- Car Categories -->
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Our Fleet</h2>
+        <div class="row">
+            <!-- Luxury Cars -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='images/luxury/car1.png') }}" class="card-img-top" alt="Luxury Car">
+                    <div class="card-body text-center">
+                        <h3>Luxury Cars</h3>
+                        <p>Experience ultimate comfort and elegance</p>
+                    </div>
+                </div>
+            </div>
+            <!-- SUVs -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='images/suv/car1.png') }}" class="card-img-top" alt="SUV">
+                    <div class="card-body text-center">
+                        <h3>SUVs</h3>
+                        <p>Perfect for family trips and adventures</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Economy Cars -->
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <img src="{{ url_for('static', filename='images/economy/car1.png') }}" class="card-img-top" alt="Economy Car">
+                    <div class="card-body text-center">
+                        <h3>Economy Cars</h3>
+                        <p>Efficient and budget-friendly options</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Cars Section -->
+    <div class="bg-light py-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Featured Vehicles</h2>
+            <div class="row">
+                {% for i in range(1, 7) %}
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="{{ url_for('static', filename='images/featured/car' + i|string + '.jpg') }}" 
+                             class="card-img-top featured-car-img" alt="Featured Car {{ i }}">
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Why Choose Us -->
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Why Choose Us</h2>
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <i class="fas fa-car-side fa-3x mb-3 text-primary"></i>
+                <h4>Wide Selection</h4>
+                <p>Choose from our extensive fleet</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <i class="fas fa-dollar-sign fa-3x mb-3 text-primary"></i>
+                <h4>Best Prices</h4>
+                <p>Competitive rates guaranteed</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                <h4>24/7 Support</h4>
+                <p>Always here to help</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                <h4>Safe & Secure</h4>
+                <p>Fully insured vehicles</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <!-- Contact Info -->
+                <div class="col-md-4 mb-4">
+                    <h5>Contact Us</h5>
+                    <p><i class="fas fa-phone me-2"></i> +20 1011491147</p>
+                    <p><i class="fas fa-envelope me-2"></i> info@carrental.com</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> Faculty of Engineering Alexandria University, Alexandria</p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="col-md-4 mb-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Terms & Conditions</a></li>
+                        <li><a href="#" class="text-light">Privacy Policy</a></li>
+                        <li><a href="#" class="text-light">FAQs</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Social Media -->
+                <div class="col-md-4 mb-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-light me-3"><i class="fab fa-facebook fa-2x"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-twitter fa-2x"></i></a>
+                        <a href="#" class="text-light me-3"><i class="fab fa-instagram fa-2x"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-linkedin fa-2x"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Copyright -->
+            <div class="text-center">
+                <p>&copy; 2024 CarRental. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<style>
+.hero-section {
+    background: linear-gradient(rgba(0, 123, 255, 0.9), rgba(0, 123, 255, 0.9)), 
+                url("{{ url_for('static', filename='images/hero-bg.jpg') }}") center/cover;
+    padding: 100px 0;
+}
+
+.card {
+    transition: transform 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+    transform: translateY(-10px);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.featured-car-img {
+    height: 250px;
+    object-fit: cover;
+}
+
+.social-links a:hover {
+    opacity: 0.8;
+}
+
+footer {
+    margin-top: auto;
+}
+
+.fa-3x {
+    transition: transform 0.3s ease;
+}
+
+.fa-3x:hover {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}
